@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Tumor Detection Result</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+                        url('https://images.unsplash.com/photo-1573497491208-6b1acb260507?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        .result-box {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        footer {
+            background: #343a40;
+            color: white;
+            margin-top: auto;
+            padding: 1rem;
+        }
+        .risk-bar {
+            height: 25px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            padding: 0.8rem 1rem;
+            border-bottom: 3px solid #64b5f6;
+        }
+
+        .navbar-brand {
+            font-family: 'Arial Rounded MT Bold', sans-serif;
+            font-size: 1.8rem;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-brand i {
+            margin-right: 12px;
+            font-size: 28px;
+            color: #82b1ff;
+        }
+
+        .nav-item {
+            margin: 0 10px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link {
+            color: #e3f2fd !important;
+            font-weight: 500;
+            padding: 8px 15px !important;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #ffffff !important;
+            background: rgba(100, 181, 246, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #64b5f6;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .navbar-toggler {
+            border-color: rgba(100, 181, 246, 0.5);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3e%3cpath stroke='rgba(100, 181, 246, 1)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        .progress-bar[data-width] {
+            width: attr(data-width);
+        }
+    </style>
+</head>
+
+<body class="d-flex flex-column">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-brain"></i>
+                Brain Tumor Detection
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="./">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Result Section -->
+    <main class="container my-5 flex-grow-1">
+        <div class="result-box">
+            <h2 class="text-center mb-4 display-4" style="color: #1a237e;">
+                <i class="fas fa-diagnoses"></i> Diagnosis Report
+            </h2>
+
+            <div class="row">
+                <div class="col-md-6 text-center">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            MRI Scan Preview
+                        </div>
+                        <div class="card-body p-3">
+                            {% if image_name %}
+                                <img src="{{ url_for('static', filename='uploads/' + image_name) }}" 
+                                     class="img-fluid" alt="MRI Scan"
+                                     style="max-height: 400px; object-fit: contain;">
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    No image available
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <i class="fas fa-chart-pie mr-2"></i>Analysis Results
+                        </div>
+                        <div class="card-body">
+                            <h4 class="card-title mb-4">
+                                <i class="fas fa-clipboard-check mr-2"></i>Diagnosis Result: 
+                                {% if predvalue %}
+                                    <span class="badge badge-danger">Brain Tumor Detected</span>
+                                {% else %}
+                                    <span class="badge badge-success">No Brain Tumor Detected</span>
+                                {% endif %}
+                            </h4>
+                            
+                            <div class="mt-4">
+                                <h5><i class="fas fa-percentage mr-2"></i>Confidence Score:</h5>
+                                <div class="progress risk-bar bg-light">
+                                    <div class="progress-bar {% if predvalue %}bg-danger{% else %}bg-success{% endif %}"
+                                         role="progressbar"
+                                         data-width="{{ pred_prob }}%"
+                                         aria-valuenow="{{ pred_prob }}"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100"
+                                         style="width: 0">
+                                        {{ '%.2f'|format(pred_prob) }}%
+                                    </div>
+                                </div>
+                                <small class="text-muted mt-2 d-block">
+                                    {% if predvalue %}
+                                        <i class="fas fa-info-circle mr-1"></i>Confidence level that a brain tumor is present
+                                    {% else %}
+                                        <i class="fas fa-info-circle mr-1"></i>Confidence level that no brain tumor is present
+                                    {% endif %}
+                                </small>
+                            </div>
+
+                            <div class="mt-4">
+                                <h5><i class="fas fa-list-ul mr-2"></i>Recommendations:</h5>
+                                <ul class="list-group">
+                                    {% if predvalue %}
+                                        <li class="list-group-item">Consult a neurologist immediately</li>
+                                        <li class="list-group-item">Schedule follow-up MRI</li>
+                                        <li class="list-group-item">Review treatment options</li>
+                                    {% else %}
+                                        <li class="list-group-item">Regular check-ups recommended</li>
+                                        <li class="list-group-item">Maintain healthy lifestyle</li>
+                                        <li class="list-group-item">Annual MRI screening</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a class="btn btn-primary btn-lg" href="./">
+                    <i class="fas fa-redo"></i> Analyze Another Scan
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center mt-5">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Brain Tumor Detection System. All rights reserved.</p>
+            <p class="mb-0">Group no 39</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressBar = document.querySelector('.progress-bar');
+            const width = progressBar.getAttribute('data-width');
+            progressBar.style.width = width;
+        });
+    </script>
+</body>
+</html>
